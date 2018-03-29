@@ -5,7 +5,7 @@ const checkLogin = require('../middlewares/check').checkLogin;
 // GET /articles 所有用户或者特定用户的文章页
 // eg: GET /articles?author=xxx
 router.get('/', (req, res, next) => {
-    res.send('文章主页');
+    res.render('articles');
 });
 
 // GET /articles/:articlesId 获取特定的文章详情页
