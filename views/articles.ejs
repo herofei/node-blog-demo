@@ -1,3 +1,5 @@
 <%- include('header') %>
-    这是文章主页
-<%- include('footer') %>
+    <% articles.forEach(function (article) { %>
+        <%- include('components/article-content', { article: article }) %>
+    <% }) %>
+ <%- include('footer') %>

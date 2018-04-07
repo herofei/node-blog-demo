@@ -1,0 +1,50 @@
+<div class="post-content">
+    <div class="ui grid">
+        <div class="four wide column">
+            <a class="avatar avatar-link" href="/articles?author=<%= article.author._id %>" data-title="<%= article.author.name %> | <%= ({m: '男', f: '女', x: '保密'})[article.author.gender] %>"
+                data-content="<%= article.author.bio %>">
+                <img class="avatar" src="/img/<%= article.author.avatar %>">
+            </a>
+        </div>
+
+        <div class="eight wide column">
+            <div class="ui segment">
+                <h3>
+                    <a href="/articles/<%= article._id %>">
+                        <%= article.title %>
+                    </a>
+                </h3>
+                <pre><%- article.content %></pre>
+                <div>
+                    <span class="tag">
+                        <%= article.created_at %>
+                    </span>
+                    <span class="tag right">
+                        <span>
+                            浏览(<%= article.pv || 0 %>)
+                        </span>
+                        <span>
+                            留言(<%= article.commentsCount || 0 %>)
+                        </span>
+
+                        <% if (user && article.author._id && user._id.toString() === article.author._id.toString()) { %>
+                            <div class="ui inline dropdown">
+                                <div class="text"></div>
+                                <i class="dropdown icon"></i>
+                                <div class="menu">
+                                    <div class="item">
+                                        <a href="/articles/<%= article._id %>/edit">编辑</a>
+                                    </div>
+                                    <div class="item">
+                                        <a href="/articles/<%= article._id %>/remove">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

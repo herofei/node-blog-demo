@@ -3,6 +3,8 @@ const path = require('path');
 const sha1 = require('sha1');
 const express = require('express');
 const router = express.Router();
+const multipart = require('connect-multiparty');
+const multipartMiddleware = multipart();
 
 const UserModel = require('../models/users');
 const checkNotLogin = require('../middlewares/check').checkNotLogin;
@@ -13,13 +15,13 @@ router.get('/', checkNotLogin, (req, res, next) => {
 });
 
 // POST /signup 注册
-router.post('/', checkNotLogin, (req, res, next) => {
-    const name = req.fields.name;
-    const gender = req.fields.gender;
-    const bio = req.fields.bio;
+router.post('/',multipartMiddleware, checkNotLogin, (req, res, next) => {
+    const name = req.body.name;
+    const gender = req.body.gender;
+    const bio = req.body.bio;
     const avatar = req.files.avatar.path.split(path.sep).pop();
-    let password = req.fields.password;
-    const repassword = req.fields.repassword;
+    let password = req.body.password;
+    const repassword = req.body.repassword;
 
     // 校验参数
     try {
@@ -70,7 +72,7 @@ router.post('/', checkNotLogin, (req, res, next) => {
             // 写入 flash
             req.flash('success', '注册成功');
             // 跳转到首页
-            res.redirect('/posts');
+            res.redirect('/articles');
         })
         .catch((e) => {
             // 注册失败，异步删除上传的头像

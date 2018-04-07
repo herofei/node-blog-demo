@@ -1,41 +1,165 @@
 const express = require('express');
 const router = express.Router();
 const checkLogin = require('../middlewares/check').checkLogin;
+const ArticleModel = require('../models/articles');
 
 // GET /articles 所有用户或者特定用户的文章页
 // eg: GET /articles?author=xxx
 router.get('/', (req, res, next) => {
-    res.render('articles');
+    const author = req.query.author;
+    ArticleModel.getArticles(author)
+        .then((articles) => {
+            res.render('articles', {
+                articles: articles
+            });
+        })
+        .catch(next);
 });
 
 // GET /articles/:articlesId 获取特定的文章详情页
 router.get('/:articlesId', (req, res, next) => {
-    res.send('获取文章详情');
-});
+    const articleId = req.params.articleId;
 
-// POST /articles/create 发表一篇文章
-router.post('/create', checkLogin, (req, res, next) => {
-    res.send('创建文章成功！');
+    Promise.all([
+            ArticleModel.getArticleById(articleId), // 获取文章信息
+            ArticleModel.incPv(articleId) // pv 加 1
+        ])
+        .then(function (result) {
+            const article = result[0];
+            if (!article) {
+                throw new Error('该文章不存在');
+            }
+
+            res.render('article', {
+                article: article
+            });
+        })
+        .catch(next);
 });
 
 // GET /articles/create 发表文章页
 router.get('/create', checkLogin, (req, res, next) => {
-    res.send('创建文章页成功！');
+    res.render('create');
 });
 
-// POST /articles/:articlesId/edit 更新一篇文章
-router.post('/:articlesId/edit', checkLogin, (req, res, next) => {
-    res.send('更新文章');
+// POST /articles/create 发表一篇文章
+router.post('/create', checkLogin, (req, res, next) => {
+    const author = req.session.user._id;
+    const title = req.fields.title;
+    const content = req.fields.content;
+
+    // 校验参数
+    try {
+        if (!title.length) {
+            throw new Error('请填写标题');
+        }
+        if (!content.length) {
+            throw new Error('请填写内容');
+        }
+    } catch (e) {
+        req.flash('error', e.message);
+        return res.redirect('back');
+    }
+
+    let article = {
+        author: author,
+        title: title,
+        content: content
+    };
+
+    ArticleModel.create(article)
+        .then((result) => {
+            // 此 article 是插入 mongodb 后的值，包含 _id
+            article = result.ops[0];
+            req.flash('success', '发表成功');
+            // 发表成功后跳转到该文章页
+            res.redirect(`/articles/${article._id}`);
+        })
+        .catch(next);
 });
 
 // GET /articles/:articlesId/edit 更新一篇文章
 router.get('/:articlesId/edit', checkLogin, (req, res, next) => {
-    res.send('更新文章页');
+    const articleId = req.params.articleId;
+    const author = req.session.user._id;
+
+    ArticleModel.getRawArticleById(articleId)
+        .then((article) => {
+            if (!article) {
+                throw new Error('该文章不存在');
+            }
+            if (author.toString() !== article.author._id.toString()) {
+                throw new Error('权限不足');
+            }
+            res.render('edit', {
+                article: article
+            });
+        })
+        .catch(next);
+});
+
+// POST /articles/:articlesId/edit 更新一篇文章
+router.post('/:articlesId/edit', checkLogin, (req, res, next) => {
+    const articleId = req.params.articleId;
+    const author = req.session.user._id;
+    const title = req.fields.title;
+    const content = req.fields.content;
+
+    // 校验参数
+    try {
+        if (!title.length) {
+            throw new Error('请填写标题');
+        }
+        if (!content.length) {
+            throw new Error('请填写内容');
+        }
+    } catch (e) {
+        req.flash('error', e.message);
+        return res.redirect('back');
+    }
+
+    ArticleModel.getRawArticleById(articleId)
+        .then((article) => {
+            if (!article) {
+                throw new Error('文章不存在');
+            }
+            if (article.author._id.toString() !== author.toString()) {
+                throw new Error('没有权限');
+            }
+            ArticleModel.updateArticleById(articleId, {
+                    title: title,
+                    content: content
+                })
+                .then(() => {
+                    req.flash('success', '编辑文章成功');
+                    // 编辑成功后跳转到上一页
+                    res.redirect(`/articles/${articleId}`);
+                })
+                .catch(next);
+        });
 });
 
 // GET /articles/:articleId/remove 删除一篇文章(此处可以考虑用DELETE)
 router.get('/:articleId/remove', checkLogin, (req, res, next) => {
-    res.send('删除文章成功！');
+    const articleId = req.params.articleId;
+    const author = req.session.user._id;
+
+    ArticleModel.getRawArticleById(articleId)
+        .then(function (article) {
+            if (!article) {
+                throw new Error('文章不存在');
+            }
+            if (article.author._id.toString() !== author.toString()) {
+                throw new Error('没有权限');
+            }
+            ArticleModel.delArticleById(articleId)
+                .then(function () {
+                    req.flash('success', '删除文章成功');
+                    // 删除成功后跳转到主页
+                    res.redirect('/articles');
+                })
+                .catch(next);
+        });
 });
 
 module.exports = router;
