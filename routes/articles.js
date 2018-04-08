@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const checkLogin = require('../middlewares/check').checkLogin;
 const ArticleModel = require('../models/articles');
+const CommentModel = require('../models/comments');
 
 // GET /articles 所有用户或者特定用户的文章页
 // eg: GET /articles?author=xxx
@@ -22,16 +23,19 @@ router.get('/:articlesId', (req, res, next) => {
 
     Promise.all([
             ArticleModel.getArticleById(articleId), // 获取文章信息
+            CommentModel.getComments(articleId), // 获取该文章所有留言
             ArticleModel.incPv(articleId) // pv 加 1
         ])
-        .then(function (result) {
+        .then((result) => {
             const article = result[0];
+            const comments = result[1];
             if (!article) {
                 throw new Error('该文章不存在');
             }
 
             res.render('article', {
-                article: article
+                article: article,
+                comments: comments
             });
         })
         .catch(next);
@@ -145,7 +149,7 @@ router.get('/:articleId/remove', checkLogin, (req, res, next) => {
     const author = req.session.user._id;
 
     ArticleModel.getRawArticleById(articleId)
-        .then(function (article) {
+        .then((article) => {
             if (!article) {
                 throw new Error('文章不存在');
             }
@@ -153,7 +157,7 @@ router.get('/:articleId/remove', checkLogin, (req, res, next) => {
                 throw new Error('没有权限');
             }
             ArticleModel.delArticleById(articleId)
-                .then(function () {
+                .then(() => {
                     req.flash('success', '删除文章成功');
                     // 删除成功后跳转到主页
                     res.redirect('/articles');
