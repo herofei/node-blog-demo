@@ -6,6 +6,8 @@ const flash = require('connect-flash');
 const config = require('config-lite')(__dirname);
 const routes = require('./routes');
 const pkg = require('./package');
+const winston = require('winston');
+const expressWinston = require('express-winston');
 
 const app = express();
 
@@ -50,7 +52,34 @@ app.use((req, res, next) => {
 });
 
 // 路由
+// 正常请求的日志
+app.use(expressWinston.logger({
+    transports: [
+        new(winston.transports.Console)({
+            json: true,
+            colorize: true
+        }),
+        new winston.transports.File({
+            filename: 'logs/success.log'
+        })
+    ]
+}));
+
+// 路由
 routes(app);
+
+// 错误请求的日志
+app.use(expressWinston.errorLogger({
+    transports: [
+        new winston.transports.Console({
+            json: true,
+            colorize: true
+        }),
+        new winston.transports.File({
+            filename: 'logs/error.log'
+        })
+    ]
+}));
 
 // 处理表单及文件上传的中间件
 // 此中间件使用过程中存在bug,故用connect-multiparty代替
