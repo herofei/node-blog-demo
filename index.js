@@ -62,4 +62,9 @@ routes(app);
 // 监听端口，启动程序
 app.listen(config.port, () => {
     console.log(`${pkg.name} listening on port ${config.port}`);
+    app.use((err, req, res, next) => {
+        console.error(err);
+        req.flash('error', err.message);
+        res.redirect('/articles');
+    });
 });
