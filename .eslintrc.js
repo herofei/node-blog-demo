@@ -6,5 +6,12 @@ module.exports = {
     },
     "rules": {
         "semi": 2
+    },
+    "globals": {
+        "describe": true,
+        "beforeEach": true,
+        "afterEach": true,
+        "after": true,
+        "it": true
     }
 };

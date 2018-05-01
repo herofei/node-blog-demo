@@ -77,6 +77,7 @@ module.exports = {
                 _id: -1
             })
             .addCreatedAt()
+            .addCommentsCount()
             .contentToHtml()
             .exec();
     },

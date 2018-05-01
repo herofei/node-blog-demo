@@ -3,6 +3,8 @@ const router = express.Router();
 const checkLogin = require('../middlewares/check').checkLogin;
 const ArticleModel = require('../models/articles');
 const CommentModel = require('../models/comments');
+const multipart = require('connect-multiparty');
+const multipartMiddleware = multipart();
 
 // GET /articles 所有用户或者特定用户的文章页
 // eg: GET /articles?author=xxx
@@ -17,40 +19,17 @@ router.get('/', (req, res, next) => {
         .catch(next);
 });
 
-// GET /articles/:articlesId 获取特定的文章详情页
-router.get('/:articlesId', (req, res, next) => {
-    const articleId = req.params.articleId;
-
-    Promise.all([
-            ArticleModel.getArticleById(articleId), // 获取文章信息
-            CommentModel.getComments(articleId), // 获取该文章所有留言
-            ArticleModel.incPv(articleId) // pv 加 1
-        ])
-        .then((result) => {
-            const article = result[0];
-            const comments = result[1];
-            if (!article) {
-                throw new Error('该文章不存在');
-            }
-
-            res.render('article', {
-                article: article,
-                comments: comments
-            });
-        })
-        .catch(next);
-});
-
 // GET /articles/create 发表文章页
 router.get('/create', checkLogin, (req, res, next) => {
     res.render('create');
 });
 
 // POST /articles/create 发表一篇文章
-router.post('/create', checkLogin, (req, res, next) => {
+router.post('/create', multipartMiddleware, checkLogin, (req, res, next) => {
+    debugger;
     const author = req.session.user._id;
-    const title = req.fields.title;
-    const content = req.fields.content;
+    const title = req.body.title;
+    const content = req.body.content;
 
     // 校验参数
     try {
@@ -82,8 +61,32 @@ router.post('/create', checkLogin, (req, res, next) => {
         .catch(next);
 });
 
-// GET /articles/:articlesId/edit 更新一篇文章
-router.get('/:articlesId/edit', checkLogin, (req, res, next) => {
+// GET /articles/:articleId 获取特定的文章详情页
+router.get('/:articleId', (req, res, next) => {
+    const articleId = req.params.articleId;
+
+    Promise.all([
+            ArticleModel.getArticleById(articleId), // 获取文章信息
+            CommentModel.getComments(articleId), // 获取该文章所有留言
+            ArticleModel.incPv(articleId) // pv 加 1
+        ])
+        .then((result) => {
+            const article = result[0];
+            const comments = result[1];
+            if (!article) {
+                throw new Error('该文章不存在');
+            }
+
+            res.render('article', {
+                article: article,
+                comments: comments
+            });
+        })
+        .catch(next);
+});
+
+// GET /articles/:articleId/edit 获取某篇文章编辑页面
+router.get('/:articleId/edit', checkLogin, (req, res, next) => {
     const articleId = req.params.articleId;
     const author = req.session.user._id;
 
@@ -102,8 +105,8 @@ router.get('/:articlesId/edit', checkLogin, (req, res, next) => {
         .catch(next);
 });
 
-// POST /articles/:articlesId/edit 更新一篇文章
-router.post('/:articlesId/edit', checkLogin, (req, res, next) => {
+// POST /articles/:articleId/edit 更新一篇文章
+router.post('/:articleId/edit', checkLogin, (req, res, next) => {
     const articleId = req.params.articleId;
     const author = req.session.user._id;
     const title = req.fields.title;

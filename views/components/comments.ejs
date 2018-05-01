@@ -11,7 +11,7 @@
                             <img src="/img/<%= comment.author.avatar %>">
                         </span>
                         <div class="content">
-                            <a class="author" href="/posts?author=<%= comment.author._id %>">
+                            <a class="author" href="/articles?author=<%= comment.author._id %>">
                                 <%= comment.author.name %>
                             </a>
                             <div class="metadata">
@@ -33,8 +33,8 @@
                 <% }) %>
 
                 <% if (user) { %>
-                    <form class="ui reply form" method="post" action="/comments">
-                        <input name="postId" value="<%= post._id %>" hidden>
+                    <form class="ui reply form" method="post" action="/comments" enctype="multipart/form-data">
+                        <input name="articleId" value="<%= article._id %>" hidden>
                         <div class="field">
                             <textarea name="content"></textarea>
                         </div>

@@ -4,7 +4,9 @@ const sha1 = require('sha1');
 const express = require('express');
 const router = express.Router();
 const multipart = require('connect-multiparty');
-const multipartMiddleware = multipart();
+const multipartMiddleware = multipart({
+    uploadDir : path.join(__dirname, '../public/img')
+});
 
 const UserModel = require('../models/users');
 const checkNotLogin = require('../middlewares/check').checkNotLogin;
@@ -15,7 +17,7 @@ router.get('/', checkNotLogin, (req, res, next) => {
 });
 
 // POST /signup 注册
-router.post('/',multipartMiddleware, checkNotLogin, (req, res, next) => {
+router.post('/', multipartMiddleware, checkNotLogin, (req, res, next) => {
     const name = req.body.name;
     const gender = req.body.gender;
     const bio = req.body.bio;
@@ -29,7 +31,7 @@ router.post('/',multipartMiddleware, checkNotLogin, (req, res, next) => {
             throw new Error('名字请限制在 1-10 个字符');
         }
         if (['m', 'f', 'x'].indexOf(gender) === -1) {
-            throw new Error('性别只能是 m、f 或 x');
+            throw new Error('性别只能是 男、女 或 保密');
         }
         if (!(bio.length >= 1 && bio.length <= 30)) {
             throw new Error('个人简介请限制在 1-30 个字符');

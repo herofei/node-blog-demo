@@ -2,14 +2,14 @@
 
     <div class="ui grid">
         <div class="four wide column">
-            <a class="avatar avatar-link" href="/posts?author=<%= user._id %>" data-title="<%= user.name %> | <%= ({m: '男', f: '女', x: '保密'})[user.gender] %>"
+            <a class="avatar avatar-link" href="/articles?author=<%= user._id %>" data-title="<%= user.name %> | <%= ({m: '男', f: '女', x: '保密'})[user.gender] %>"
                 data-content="<%= user.bio %>">
                 <img class="avatar" src="/img/<%= user.avatar %>">
             </a>
         </div>
 
         <div class="eight wide column">
-            <form class="ui form segment" method="post">
+            <form class="ui form segment" method="post" enctype="multipart/form-data">
                 <div class="field required">
                     <label>标题</label>
                     <input type="text" name="title">

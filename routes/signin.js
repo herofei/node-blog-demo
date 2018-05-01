@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const UserModel = require('../models/users');
 const checkNotLogin = require('../middlewares/check').checkNotLogin;
+const multipart = require('connect-multiparty');
+const multipartMiddleware = multipart();
 
 // GET /signin 获取登录页
 router.get('/', checkNotLogin, (req, res, next) => {
@@ -10,9 +12,10 @@ router.get('/', checkNotLogin, (req, res, next) => {
 });
 
 // POST /signin 用户登录
-router.post('/', checkNotLogin, (req, res, next) => {
-    const name = req.fields.name;
-    const password = req.fields.password;
+router.post('/', multipartMiddleware, checkNotLogin, (req, res, next) => {
+    debugger;
+    const name = req.body.name;
+    const password = req.body.password;
 
     // 校验参数
     try {

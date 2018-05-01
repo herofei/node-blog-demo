@@ -3,12 +3,14 @@ const router = express.Router();
 
 const checkLogin = require('../middlewares/check').checkLogin;
 const CommentModel = require('../models/comments');
+const multipart = require('connect-multiparty');
+const multipartMiddleware = multipart();
 
 // POST /comments 创建一条留言
-router.post('/', checkLogin, (req, res, next) => {
+router.post('/', multipartMiddleware, checkLogin, (req, res, next) => {
     const author = req.session.user._id;
-    const articleId = req.fields.articleId;
-    const content = req.fields.content;
+    const articleId = req.body.articleId;
+    const content = req.body.content;
 
     // 校验参数
     try {

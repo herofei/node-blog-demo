@@ -32,17 +32,17 @@ module.exports = {
     },
 
     // 通过文章 id 删除该文章下所有留言
-    delCommentsByPostId (postId) {
+    delCommentsByArticleId (articleId) {
         return Comment.deleteMany({
-            postId: postId
+            articleId: articleId
         }).exec();
     },
 
     // 通过文章 id 获取该文章下所有留言，按留言创建时间升序
-    getComments (postId) {
+    getComments (articleId) {
         return Comment
             .find({
-                postId: postId
+                articleId: articleId
             })
             .populate({
                 path: 'author',
@@ -57,9 +57,9 @@ module.exports = {
     },
 
     // 通过文章 id 获取该文章下留言数
-    getCommentsCount (postId) {
+    getCommentsCount (articleId) {
         return Comment.count({
-            postId: postId
+            articleId: articleId
         }).exec();
     }
 };

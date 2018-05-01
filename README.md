@@ -6,5 +6,6 @@
 
 Using node:
 ```
+npm install
 supervisor index
 ```
